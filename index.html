@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hỗ trợ kéo tâm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(14px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .lock-box {
+            background: #1a1a1a;
+            padding: 45px 40px;
+            border-radius: 16px;
+            border: 2px solid #ff0000;
+            box-shadow: 0 0 60px rgba(255, 0, 0, 0.2);
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .lock-box h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ff0000;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .lock-box p {
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .lock-box input {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            background: #0a0a0a;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            outline: none;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .lock-box input:focus {
+            border-color: #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+        }
+
+        .lock-box input::placeholder {
+            color: #555;
+            font-weight: 400;
+        }
+
+        .lock-box .error-msg {
+            color: #ff4444;
+            font-size: 0.9rem;
+            margin-top: 12px;
+            min-height: 28px;
+            font-weight: 500;
+        }
+
+        .lock-btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 18px;
+            border: none;
+            border-radius: 10px;
+            background: #ff0000;
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .lock-btn:hover {
+            background: #cc0000;
+            transform: scale(1.02);
+        }
+
+        .card {
+            background: #0a0a0a;
+            border-radius: 16px;
+            padding: 30px 25px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid #1a1a1a;
+        }
+
+        .contact {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        .contact .zalo {
+            color: #ff0000;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .contact .zalo:hover {
+            text-decoration: underline;
+        }
+
+        .contact .sub {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .contact .tiktok {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .toggle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #111;
+            color: #ccc;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .toggle-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .toggle-item .label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .switch {
+            width: 44px;
+            height: 24px;
+            background: #2a2a2a;
+            border-radius: 40px;
+            position: relative;
+            transition: 0.3s;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .switch .slider {
+            width: 18px;
+            height: 18px;
+            background: #555;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            transition: 0.3s;
+        }
+
+        .switch.active {
+            background: #ff0000;
+        }
+
+        .switch.active .slider {
+            background: #fff;
+            left: 23px;
+        }
+
+        .slider-group {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .slider-group .slider-header {
+            display: flex;
+            justify-content: space-between;
+            color: #ccc;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .slider-group .slider-header .value {
+            color: #ff0000;
+            font-weight: 700;
+        }
+
+        .slider-group input[type="range"] {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #2a2a2a;
+            border-radius: 10px;
+            outline: none;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .slider-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ff0000;
+            border: 2px solid #fff;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .slider-group input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ff0000;
+            border: 2px solid #fff;
+            cursor: pointer;
+        }
+
+        .apply-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 18px;
+            border: none;
+            border-radius: 10px;
+            background: #ff0000;
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .apply-btn:hover {
+            background: #cc0000;
+            transform: scale(1.02);
+        }
+
+        .apply-btn:active {
+            transform: scale(0.98);
+        }
+
+        .footer {
+            text-align: center;
+            color: #333;
+            font-size: 0.7rem;
+            margin-top: 16px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== OVERLAY LOCK ===== -->
+    <div class="overlay" id="lockOverlay">
+        <div class="lock-box">
+            <h2>🔐</h2>
+            <h2>NHẬP KEY</h2>
+            <p>Nhập key để truy cập</p>
+            <input type="password" id="keyInput" placeholder="Nhập key..." autofocus>
+            <div class="error-msg" id="errorMsg"></div>
+            <button class="lock-btn" id="unlockBtn">Mở khóa</button>
+        </div>
+    </div>
+
+    <!-- ===== NỘI DUNG CHÍNH ===== -->
+    <div class="card" id="mainContent">
+        <!-- CONTACT -->
+        <div class="contact">
+            <div>
+                <a class="zalo" href="https://zalo.me/0347453688" target="_blank">📞 Liên hệ Zalo: 0347453688</a>
+            </div>
+            <div class="sub">mua key, hỗ trợ kéo tâm ib</div>
+            <div class="tiktok">🎵 TikTok: @tienhiep275</div>
+        </div>
+
+        <!-- TOGGLE ITEMS -->
+        <div class="toggle-item">
+            <span class="label">☠️ Nhẹ tâm</span>
+            <div class="switch" data-toggle="nhe-tam">
+                <div class="slider"></div>
+            </div>
+        </div>
+
+        <div class="toggle-item">
+            <span class="label">💀 Headlook V3</span>
+            <div class="switch" data-toggle="headlook">
+                <div class="slider"></div>
+            </div>
+        </div>
+
+        <div class="toggle-item">
+            <span class="label">💀 Fix rung</span>
+            <div class="switch" data-toggle="fix-rung">
+                <div class="slider"></div>
+            </div>
+        </div>
+
+        <div class="toggle-item">
+            <span class="label">🎯 bám đầu</span>
+            <div class="switch" data-toggle="bam-dau">
+                <div class="slider"></div>
+            </div>
+        </div>
+
+        <!-- Tỉ lệ Headshot -->
+        <div class="slider-group">
+            <div class="slider-header">
+                <span>🎯 Tỉ lệ Headshot</span>
+                <span class="value" id="headshotValue">0%</span>
+            </div>
+            <input type="range" id="headshotSlider" min="0" max="100" value="0">
+        </div>
+
+        <!-- NÚT ÁP DỤNG -->
+        <button class="apply-btn" id="applyBtn">▶ ÁP DỤNG</button>
+
+        <div class="footer">⚡ Hỗ trợ kéo tâm</div>
+    </div>
+
+    <script>
+        // ===== QUẢN LÝ KEY VỚI GIỚI HẠN =====
+        const KEY_LIST = {
+            'Kingdpi001': { limit: 2000, countKey: 'count_Kingdpi001' },
+            'chimbu100': { limit: 5000, countKey: 'count_chimbu100' }
+        };
+
+        // Hàm kiểm tra key và tăng số lần sử dụng nếu hợp lệ
+        function validateAndUseKey(key) {
+            const keyData = KEY_LIST[key];
+            if (!keyData) return { valid: false, message: '❌ Key không tồn tại!' };
+
+            // Lấy số lần đã sử dụng từ localStorage
+            let used = parseInt(localStorage.getItem(keyData.countKey) || '0');
+            if (used >= keyData.limit) {
+                return { valid: false, message: `❌ Key đã hết hạn! (Đã dùng ${used}/${keyData.limit} thiết bị)` };
+            }
+
+            // Tăng số lần sử dụng và lưu
+            used++;
+            localStorage.setItem(keyData.countKey, used);
+            return { valid: true, message: `✅ Kích hoạt thành công! (${used}/${keyData.limit} thiết bị)` };
+        }
+
+        // ===== XỬ LÝ LOCK =====
+        const overlay = document.getElementById('lockOverlay');
+        const keyInput = document.getElementById('keyInput');
+        const unlockBtn = document.getElementById('unlockBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        let currentKeyUsed = null; // lưu key đã dùng để hiển thị thông báo
+
+        function unlock() {
+            const entered = keyInput.value.trim();
+            if (!entered) {
+                errorMsg.textContent = '⚠️ Vui lòng nhập key!';
+                return;
+            }
+
+            const result = validateAndUseKey(entered);
+            if (result.valid) {
+                overlay.classList.add('hidden');
+                errorMsg.textContent = '';
+                keyInput.value = '';
+                currentKeyUsed = entered;
+                // Lưu key đã dùng vào localStorage để biết đã mở khóa
+                localStorage.setItem('unlocked_key', entered);
+                // Hiển thị thông báo thành công (có thể thêm)
+                console.log(result.message);
+            } else {
+                errorMsg.textContent = result.message;
+                keyInput.value = '';
+                keyInput.focus();
+                keyInput.style.borderColor = '#ff4444';
+                setTimeout(() => keyInput.style.borderColor = '', 600);
+            }
+        }
+
+        unlockBtn.addEventListener('click', unlock);
+        keyInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') unlock();
+        });
+
+        // Kiểm tra nếu đã mở khóa trước đó (giữ trạng thái)
+        window.addEventListener('load', () => {
+            const unlocked = localStorage.getItem('unlocked_key');
+            if (unlocked && KEY_LIST[unlocked]) {
+                // Nếu key vẫn còn hiệu lực (không bị hết hạn) thì tự động mở khóa
+                const used = parseInt(localStorage.getItem(KEY_LIST[unlocked].countKey) || '0');
+                if (used < KEY_LIST[unlocked].limit) {
+                    overlay.classList.add('hidden');
+                } else {
+                    // Nếu key đã hết hạn, xóa thông tin unlock
+                    localStorage.removeItem('unlocked_key');
+                }
+            }
+            keyInput.focus();
+        });
+
+        // ===== XỬ LÝ TOGGLE SWITCH =====
+        const switches = document.querySelectorAll('.switch');
+
+        switches.forEach(sw => {
+            const toggleName = sw.dataset.toggle;
+            const savedState = localStorage.getItem('toggle_' + toggleName);
+            if (savedState === 'true') {
+                sw.classList.add('active');
+            }
+
+            sw.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                const name = this.dataset.toggle;
+                const isActive = this.classList.contains('active');
+                localStorage.setItem('toggle_' + name, isActive);
+                console.log(`🔘 ${name}: ${isActive ? 'BẬT' : 'TẮT'}`);
+            });
+        });
+
+        // ===== XỬ LÝ SLIDER TỈ LỆ HEADSHOT =====
+        const headshotSlider = document.getElementById('headshotSlider');
+        const headshotValue = document.getElementById('headshotValue');
+
+        headshotSlider.addEventListener('input', function() {
+            const val = this.value;
+            headshotValue.textContent = val + '%';
+            localStorage.setItem('headshot', val);
+        });
+
+        // Khôi phục giá trị headshot
+        window.addEventListener('load', function() {
+            const savedHeadshot = localStorage.getItem('headshot');
+            if (savedHeadshot) {
+                headshotSlider.value = savedHeadshot;
+                headshotValue.textContent = savedHeadshot + '%';
+            }
+        });
+
+        // ===== NÚT ÁP DỤNG =====
+        document.getElementById('applyBtn').addEventListener('click', function() {
+            const activeItems = [];
+            document.querySelectorAll('.switch.active').forEach(sw => {
+                const name = sw.dataset.toggle;
+                const label = sw.closest('.toggle-item').querySelector('.label').textContent.trim();
+                activeItems.push(label);
+            });
+            const headshotVal = document.getElementById('headshotSlider').value;
+
+            this.textContent = '✅ ĐÃ KÍCH HOẠT !';
+            this.style.background = '#00aa00';
+            setTimeout(() => {
+                this.textContent = '▶ KÍCH HOẠT';
+                this.style.background = '#ff0000';
+            }, 1000);
+
+            console.log('✅ Đã KÍCH HOẠT :', { items: activeItems, headshot: headshotVal + '%' });
+            localStorage.setItem('applied_items', JSON.stringify(activeItems));
+            localStorage.setItem('applied_headshot', headshotVal);
+        });
+    </script>
+
+</body>
+</html>
